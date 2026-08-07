@@ -2,6 +2,12 @@
 
 A privacy-focused browser application for generating strong, customizable passwords locally. Passwords never leave the browser and are created with cryptographically secure random values.
 
+## Live demo
+
+[Open the Password Generator](https://slickiwnl.github.io/Password-Generator/)
+
+The application is hosted with GitHub Pages and runs entirely in the browser.
+
 ## Features
 
 - Generates passwords from 8 to 64 characters
@@ -18,7 +24,11 @@ The generator uses the browser Web Crypto API instead of `Math.random()`. Reject
 
 ## Run locally
 
-Open `password-generator.html` in a modern browser. No dependencies, build tools, accounts, or backend services are required.
+Open `index.html` in a modern browser. No dependencies, build tools, accounts, or backend services are required.
+
+## Publish with GitHub Pages
+
+In the repository settings, open **Pages**, choose **Deploy from a branch**, select `main` and `/(root)`, then save. GitHub Pages will publish `index.html` at the project URL above.
 
 ## Technology
 
@@ -31,3 +41,4 @@ Built by Ricardo Macias with AI-assisted review and iteration using OpenAI Codex
 ## Disclaimer
 
 Strength and cracking-time estimates are educational approximations. Actual password security also depends on storage methods, rate limiting, password reuse, phishing resistance, and account protections.
+

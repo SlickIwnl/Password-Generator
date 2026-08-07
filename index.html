@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Generate strong passwords locally with cryptographically secure browser APIs.">
+<title>Password Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F3F1EA;
+    --cream-dim:#E8E5DC;
+    --black:#0B0B0B;
+    --gray:#6E6A61;
+    --gray-light:#A8A399;
+    --accent:#FF4D2E;
+    --border:#D9D5C9;
+    --border-dark:#2A2A2A;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    min-height:100vh;
+    font-family:'Inter',-apple-system,sans-serif;
+    background:var(--cream);
+    color:var(--black);
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; }
+  }
+  a, button, input, .toggle{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:var(--black);
+    color:var(--cream);
+    padding:56px 6vw 60px;
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:8px;
+    font-family:'Space Mono',monospace;
+    font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gray-light);
+  }
+  .eyebrow .dot{ width:8px; height:8px; background:var(--accent); flex-shrink:0; }
+  .hero h1{
+    font-family:'Space Grotesk',Arial,sans-serif;
+    font-weight:700;
+    font-size:clamp(32px,5vw,52px);
+    line-height:1.06;
+    margin:20px 0 16px;
+    max-width:720px;
+  }
+  .hero p{
+    color:#B7B3A9;
+    max-width:460px;
+    font-size:15px;
+    line-height:1.65;
+  }
+
+  /* ---------- Content ---------- */
+  .cream-section{
+    background-color:var(--cream);
+    background-image: radial-gradient(circle, rgba(0,0,0,0.09) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .content{
+    max-width:1080px;
+    margin:0 auto;
+    padding:56px 6vw 88px;
+    display:grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap:48px;
+  }
+  @media (max-width:860px){
+    .content{ grid-template-columns:1fr; gap:40px; }
+    .hero{ padding:44px 6vw 48px; }
+  }
+
+  .panel-label{
+    display:block;
+    font-family:'Space Mono',monospace;
+    font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:10px;
+  }
+
+  /* Length slider */
+  .length-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .length-value{ font-family:'Space Mono',monospace; font-weight:700; font-size:22px; }
+  .length-input{
+    font-family:'Space Mono',monospace; font-weight:700; font-size:22px;
+    width:64px; text-align:right;
+    border:none; border-bottom:1px solid var(--border);
+    background:transparent; color:var(--black);
+    -moz-appearance:textfield;
+  }
+  .length-input::-webkit-outer-spin-button,
+  .length-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .length-input:focus{ border-bottom-color:var(--black); }
+  input[type=range]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:2px;
+    background:var(--border);
+    margin-bottom:30px;
+    cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px; height:16px;
+    background:var(--black);
+    border-radius:0;
+    cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px; height:16px;
+    background:var(--black);
+    border:none; border-radius:0;
+    cursor:pointer;
+  }
+
+  /* Toggle chips */
+  .toggle-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .toggle{
+    width:100%;
+    border:1px solid var(--border);
+    padding:13px 14px;
+    font-family:'Space Mono',monospace;
+    font-size:11.5px; letter-spacing:0.05em; text-transform:uppercase;
+    cursor:pointer; user-select:none; text-align:left;
+    background:transparent; color:var(--black);
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .toggle.active{ background:var(--black); color:var(--cream); border-color:var(--black); }
+  .toggle-full{ grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center; }
+  .toggle-full span.hint{ font-family:'Inter'; font-size:11px; color:var(--gray); text-transform:none; letter-spacing:0; }
+
+  .btn-primary{
+    width:100%;
+    padding:17px;
+    margin-top:14px;
+    background:var(--black); color:var(--cream);
+    font-family:'Space Mono',monospace; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; font-size:12.5px;
+    border:none; cursor:pointer;
+    transition:background .15s;
+  }
+  .btn-primary:hover{ background:#222; }
+
+  /* ---------- Output window ---------- */
+  .window{ border:1px solid var(--black); background:#fff; height:fit-content; }
+  .window-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 16px;
+    border-bottom:1px solid var(--border);
+    background:var(--cream-dim);
+  }
+  .window-dots{ display:flex; gap:6px; }
+  .window-dots span{ width:8px; height:8px; border-radius:50%; background:var(--gray-light); }
+  .window-tag{ font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gray); }
+  .window-body{ padding:26px; }
+
+  .password-display{
+    font-family:'Space Mono',monospace; font-weight:700;
+    font-size:clamp(17px,2.6vw,23px);
+    word-break:break-all;
+    padding:18px;
+    border:1px solid var(--border);
+    background:var(--cream);
+    margin-bottom:14px;
+    min-height:1.4em;
+  }
+  .row-actions{ display:flex; gap:10px; }
+  .copy-btn{
+    font-family:'Space Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    border:1px solid var(--black); background:transparent; color:var(--black);
+    padding:11px 18px; cursor:pointer; flex:1;
+    transition:background .15s, color .15s;
+  }
+  .copy-btn:hover{ background:var(--black); color:var(--cream); }
+  .copy-btn:disabled{ border-color:var(--gray-light); color:var(--gray-light); cursor:not-allowed; }
+  .copy-status{
+    min-height:18px; margin-top:8px;
+    font-family:'Space Mono',monospace; font-size:10.5px; color:var(--gray);
+  }
+
+  .strength-row{ margin-top:26px; }
+  .strength-bar{ display:flex; gap:4px; margin-bottom:9px; }
+  .strength-seg{ flex:1; height:6px; background:var(--border); }
+  .strength-seg.filled{ background:var(--accent); }
+  .strength-label{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gray); }
+
+  .stats-row{ display:grid; grid-template-columns:1fr 1fr 1fr; border-top:1px solid var(--border); margin-top:24px; }
+  .stat{ padding:16px 0 0; }
+  .stat + .stat{ border-left:1px solid var(--border); padding-left:16px; }
+  .stat-label{ font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gray); margin-bottom:6px; }
+  .stat-value{ font-family:'Space Grotesk',Arial,sans-serif; font-weight:700; font-size:15px; }
+
+  .crack-row{ margin-top:26px; }
+  .crack-item{ display:flex; justify-content:space-between; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--border); }
+  .crack-item:last-child{ border-bottom:none; }
+  .crack-item .label{ font-family:'Inter'; font-size:12.5px; color:var(--gray); }
+  .crack-item .value{ font-family:'Space Mono',monospace; font-weight:700; font-size:13px; }
+  .crack-note{ font-family:'Inter'; font-size:11px; color:var(--gray-light); margin-top:10px; line-height:1.55; }
+  @media (max-width:520px){
+    .toggle-grid{ grid-template-columns:1fr; }
+    .toggle-full{ grid-column:1; }
+    .window-body{ padding:20px 18px; }
+    .stats-row{ grid-template-columns:1fr; }
+    .stat + .stat{ border-left:0; border-top:1px solid var(--border); padding-left:0; margin-top:14px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="eyebrow"><span class="dot"></span>PASSWORD TOOL</div>
+    <h1>Build passwords that hold up.</h1>
+    <p>Everything is generated locally with your browser's crypto module. Nothing is sent anywhere, logged, or stored.</p>
+  </div>
+
+  <div class="cream-section">
+    <div class="content">
+
+      <div class="controls">
+        <label class="panel-label" for="length-input">Length</label>
+        <div class="length-row">
+          <span></span>
+          <input type="number" class="length-input" id="length-input" min="8" max="64" value="16" inputmode="numeric">
+        </div>
+        <input type="range" id="length-slider" min="8" max="64" value="16" aria-label="Password length">
+
+        <span class="panel-label">Character sets</span>
+        <div class="toggle-grid">
+          <button type="button" class="toggle active" id="toggle-upper" aria-pressed="true">Uppercase A–Z</button>
+          <button type="button" class="toggle active" id="toggle-lower" aria-pressed="true">Lowercase a–z</button>
+          <button type="button" class="toggle active" id="toggle-numbers" aria-pressed="true">Numbers 0–9</button>
+          <button type="button" class="toggle active" id="toggle-symbols" aria-pressed="true">Symbols !@#$</button>
+          <button type="button" class="toggle toggle-full" id="toggle-ambiguous" aria-pressed="false">
+            <span>Exclude ambiguous</span>
+            <span class="hint">0 / O / 1 / l / I</span>
+          </button>
+        </div>
+
+        <button type="button" class="btn-primary" id="generate-btn">Generate password</button>
+      </div>
+
+      <div class="window">
+        <div class="window-bar">
+          <div class="window-dots"><span></span><span></span><span></span></div>
+          <div class="window-tag">PASSWORD OUTPUT</div>
+        </div>
+        <div class="window-body">
+          <div class="password-display" id="password-display" role="status" aria-live="polite" aria-atomic="true"></div>
+          <div class="row-actions">
+            <button type="button" class="copy-btn" id="copy-btn">Copy</button>
+          </div>
+          <div class="copy-status" id="copy-status" role="status" aria-live="polite"></div>
+
+          <div class="strength-row">
+            <div class="strength-bar" id="strength-bar" role="img" aria-label="Password strength not calculated">
+              <div class="strength-seg" data-i="0"></div>
+              <div class="strength-seg" data-i="1"></div>
+              <div class="strength-seg" data-i="2"></div>
+              <div class="strength-seg" data-i="3"></div>
+            </div>
+            <div class="strength-label" id="strength-label">—</div>
+          </div>
+
+          <div class="crack-row">
+            <span class="panel-label">Time to crack (estimated)</span>
+            <div id="crack-list"></div>
+            <p class="crack-note">Assumes brute-force guessing only, not dictionary or pattern attacks. Rates are rough benchmarks, not guarantees.</p>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-label">Length</div>
+              <div class="stat-value" id="stat-length">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Charset size</div>
+              <div class="stat-value" id="stat-charset">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Entropy</div>
+              <div class="stat-value" id="stat-entropy">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  const UPPER='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const LOWER='abcdefghijklmnopqrstuvwxyz';
+  const NUMBERS='0123456789';
+  const SYMBOLS='!@#$%^&*()-_=+[]{}<>?';
+  const AMBIGUOUS='0O1lI';
+
+  const lengthSlider = document.getElementById('length-slider');
+  const lengthInput = document.getElementById('length-input');
+  const copyBtn = document.getElementById('copy-btn');
+  const copyStatus = document.getElementById('copy-status');
+  let currentPassword = '';
+  const toggles = ['toggle-upper','toggle-lower','toggle-numbers','toggle-symbols','toggle-ambiguous']
+    .map(id => document.getElementById(id));
+
+  toggles.forEach(t => t.addEventListener('click', () => {
+    t.classList.toggle('active');
+    t.setAttribute('aria-pressed', t.classList.contains('active') ? 'true' : 'false');
+    generatePassword();
+  }));
+
+  lengthSlider.addEventListener('input', () => {
+    lengthInput.value = lengthSlider.value;
+    generatePassword();
+  });
+
+  lengthInput.addEventListener('input', () => {
+    const v = parseInt(lengthInput.value, 10);
+    if(isNaN(v)) return;
+    const clamped = Math.min(Math.max(v, 8), 64);
+    lengthSlider.value = clamped;
+    generatePassword();
+  });
+
+  lengthInput.addEventListener('blur', () => {
+    let v = parseInt(lengthInput.value, 10);
+    if(isNaN(v) || v < 8) v = 8;
+    if(v > 64) v = 64;
+    lengthInput.value = v;
+    lengthSlider.value = v;
+    generatePassword();
+  });
+
+  document.getElementById('generate-btn').addEventListener('click', generatePassword);
+
+  copyBtn.addEventListener('click', async () => {
+    if(!currentPassword) return;
+    try{
+      if(!navigator.clipboard || !window.isSecureContext) throw new Error('Clipboard API unavailable');
+      await navigator.clipboard.writeText(currentPassword);
+      copyStatus.textContent = 'Password copied to clipboard.';
+    }catch{
+      const helper = document.createElement('textarea');
+      helper.value = currentPassword;
+      helper.setAttribute('readonly', '');
+      helper.style.position = 'fixed';
+      helper.style.opacity = '0';
+      document.body.appendChild(helper);
+      helper.select();
+      const copied = document.execCommand('copy');
+      helper.remove();
+      copyStatus.textContent = copied ? 'Password copied to clipboard.' : 'Copy failed. Select the password and copy it manually.';
+    }
+    setTimeout(() => { copyStatus.textContent = ''; }, 2200);
+  });
+
+  function secureRandomInt(max){
+    if(!Number.isSafeInteger(max) || max <= 0) throw new RangeError('Maximum must be a positive integer.');
+    const arr = new Uint32Array(1);
+    const limit = 0x100000000 - (0x100000000 % max);
+    do{
+      crypto.getRandomValues(arr);
+    }while(arr[0] >= limit);
+    return arr[0] % max;
+  }
+
+  function activeCharsets(){
+    let sets = [];
+    if(document.getElementById('toggle-upper').classList.contains('active')) sets.push(UPPER);
+    if(document.getElementById('toggle-lower').classList.contains('active')) sets.push(LOWER);
+    if(document.getElementById('toggle-numbers').classList.contains('active')) sets.push(NUMBERS);
+    if(document.getElementById('toggle-symbols').classList.contains('active')) sets.push(SYMBOLS);
+    const excludeAmbiguous = document.getElementById('toggle-ambiguous').classList.contains('active');
+    if(excludeAmbiguous){
+      sets = sets.map(s => s.split('').filter(c => !AMBIGUOUS.includes(c)).join(''));
+    }
+    return sets.filter(s => s.length > 0);
+  }
+
+  function generatePassword(){
+    const length = parseInt(lengthSlider.value, 10);
+    const sets = activeCharsets();
+    const display = document.getElementById('password-display');
+
+    if(sets.length === 0){
+      currentPassword = '';
+      display.textContent = 'Select at least one character set';
+      copyBtn.disabled = true;
+      copyStatus.textContent = '';
+      resetStats();
+      return;
+    }
+
+    let chars = sets.map(set => set[secureRandomInt(set.length)]);
+    const combined = sets.join('');
+    while(chars.length < length){
+      chars.push(combined[secureRandomInt(combined.length)]);
+    }
+    for(let i = chars.length - 1; i > 0; i--){
+      const j = secureRandomInt(i + 1);
+      [chars[i], chars[j]] = [chars[j], chars[i]];
+    }
+    chars = chars.slice(0, length);
+
+    currentPassword = chars.join('');
+    display.textContent = currentPassword;
+    copyBtn.disabled = false;
+    copyStatus.textContent = '';
+    updateStrength(length, combined.length);
+  }
+
+  function updateStrength(length, charsetSize){
+    const entropy = length * Math.log2(Math.max(charsetSize, 2));
+    let level, label;
+    if(entropy >= 80){ level = 4; label = 'Very strong'; }
+    else if(entropy >= 60){ level = 3; label = 'Strong'; }
+    else if(entropy >= 40){ level = 2; label = 'Fair'; }
+    else { level = 1; label = 'Weak'; }
+
+    document.querySelectorAll('.strength-seg').forEach((seg, i) => {
+      seg.classList.toggle('filled', i < level);
+    });
+    document.getElementById('strength-label').textContent = label;
+    document.getElementById('strength-bar').setAttribute('aria-label', `Password strength: ${label}`);
+    document.getElementById('stat-length').textContent = length;
+    document.getElementById('stat-charset').textContent = charsetSize;
+    document.getElementById('stat-entropy').textContent = Math.round(entropy) + ' bits';
+    renderCrackTimes(length, charsetSize);
+  }
+
+  function estimateCrackTimes(length, charsetSize){
+    const combinations = Math.pow(charsetSize, length);
+    const avgGuesses = combinations / 2; // average case, not worst case
+    const scenarios = [
+      { label:'Online attack, throttled', rate:1e2 },
+      { label:'Offline, slow hash (bcrypt)', rate:1e4 },
+      { label:'Offline, fast hash / GPU', rate:1e10 },
+    ];
+    return scenarios.map(s => ({ label:s.label, seconds: avgGuesses / s.rate }));
+  }
+
+  function formatDuration(seconds){
+    if(!isFinite(seconds)) return 'effectively forever';
+    if(seconds < 1) return 'instantly';
+    if(seconds < 60) return Math.round(seconds) + ' sec';
+    if(seconds < 3600) return Math.round(seconds / 60) + ' min';
+    if(seconds < 86400) return Math.round(seconds / 3600) + ' hrs';
+    if(seconds < 31557600) return Math.round(seconds / 86400) + ' days';
+    const years = seconds / 31557600;
+    if(years < 1000) return Math.round(years) + ' yrs';
+    if(years < 1e6) return Math.round(years / 1e3) + ' thousand yrs';
+    if(years < 1e9) return Math.round(years / 1e6) + ' million yrs';
+    if(years < 1e12) return Math.round(years / 1e9) + ' billion yrs';
+    if(years < 1e15) return Math.round(years / 1e12) + ' trillion yrs';
+    return years.toExponential(1) + ' yrs';
+  }
+
+  function renderCrackTimes(length, charsetSize){
+    const list = document.getElementById('crack-list');
+    if(!charsetSize){ list.innerHTML = ''; return; }
+    const scenarios = estimateCrackTimes(length, charsetSize);
+    list.innerHTML = scenarios.map(s => `
+      <div class="crack-item">
+        <span class="label">${s.label}</span>
+        <span class="value">${formatDuration(s.seconds)}</span>
+      </div>`).join('');
+  }
+
+  function resetStats(){
+    document.querySelectorAll('.strength-seg').forEach(seg => seg.classList.remove('filled'));
+    document.getElementById('strength-label').textContent = '—';
+    document.getElementById('strength-bar').setAttribute('aria-label', 'Password strength not calculated');
+    document.getElementById('stat-length').textContent = '—';
+    document.getElementById('stat-charset').textContent = '—';
+    document.getElementById('stat-entropy').textContent = '—';
+    document.getElementById('crack-list').innerHTML = '';
+  }
+
+  generatePassword();
+</script>
+</body>
+</html>

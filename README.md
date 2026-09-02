@@ -36,7 +36,7 @@ HTML, CSS, JavaScript, Web Crypto API, Clipboard API, and responsive web design.
 
 ## AI-assisted development
 
-Built by Ricardo Macias with AI-assisted review and iteration using OpenAI Codex. Ricardo directed the project, evaluated the recommendations, and owns the final implementation.
+Built by Ricardo Macias with AI-assisted review and iteration using Claude Code and OpenAI Codex. Ricardo directed the project, evaluated the recommendations, and owns the final implementation.
 
 ## Disclaimer
 

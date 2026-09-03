@@ -1,34 +1,34 @@
 # Password Generator
 
-A privacy-focused browser application for generating strong, customizable passwords locally. Passwords never leave the browser and are created with cryptographically secure random values.
+A simple, privacy-focused tool for creating strong passwords directly in your browser. No download, account, or installation is required.
 
-## Live demo
+## Use it online
 
 [Open the Password Generator](https://slickiwnl.github.io/Password-Generator/)
 
-The application is hosted with GitHub Pages and runs entirely in the browser.
+## How to use
+
+1. Choose a password length from 8 to 64 characters.
+2. Select the character types you want: uppercase letters, lowercase letters, numbers, and symbols.
+3. Turn on **Exclude ambiguous** if you want to remove characters that look alike, such as `0`, `O`, `1`, `l`, and `I`.
+4. Select **Generate password**.
+5. Select **Copy** to copy the password to your clipboard.
+
+Passwords are generated locally with your browser's Web Crypto API. They are not sent to or stored on a server.
 
 ## Features
 
 - Generates passwords from 8 to 64 characters
-- Supports uppercase, lowercase, numbers, symbols, and ambiguous-character exclusion
+- Supports uppercase letters, lowercase letters, numbers, and symbols
 - Guarantees at least one character from every selected character set
-- Uses rejection sampling to avoid modulo bias in random selection
-- Calculates estimated entropy, strength, and brute-force time scenarios
-- Includes accessible keyboard controls, live status feedback, and responsive layouts
-- Provides clipboard copying with a fallback for restricted browser contexts
-
-## Security approach
-
-The generator uses the browser Web Crypto API instead of `Math.random()`. Rejection sampling keeps character selection evenly distributed, and a Fisher-Yates shuffle randomizes the final character order.
+- Uses rejection sampling to avoid modulo bias
+- Shows estimated entropy, password strength, and brute-force time scenarios
+- Includes accessible keyboard controls and responsive layouts
+- Provides clipboard copying with a fallback for restricted browsers
 
 ## Run locally
 
-Open `index.html` in a modern browser. No dependencies, build tools, accounts, or backend services are required.
-
-## Publish with GitHub Pages
-
-In the repository settings, open **Pages**, choose **Deploy from a branch**, select `main` and `/(root)`, then save. GitHub Pages will publish `index.html` at the project URL above.
+Download or clone the repository, then open `index.html` in a modern browser. No dependencies, build tools, accounts, or backend services are required.
 
 ## Technology
 
@@ -41,4 +41,3 @@ Built by Ricardo Macias with AI-assisted review and iteration using Claude Code 
 ## Disclaimer
 
 Strength and cracking-time estimates are educational approximations. Actual password security also depends on storage methods, rate limiting, password reuse, phishing resistance, and account protections.
-
